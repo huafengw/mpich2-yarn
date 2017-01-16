@@ -9,6 +9,8 @@ public class MPIConfiguration extends YarnConfiguration {
 
   private static final String MPI_SITE_XML_FILE = "mpi-site.xml";
 
+  public static final String MPI_APPMASTER_MEMORY = "yarn.mpi.appmaster.memory";
+
   // Here, I do not like the PREFIX+FEATURE style, because it's not good for searching.
   public static final String MPI_EXEC_LOCATION = "yarn.mpi.exec.location";
 

@@ -180,7 +180,7 @@ public class Client {
 
   // load/reload Configuration
   public void reloadConfiguration() {
-    amMemory = conf.getInt(MPIConfiguration.MPI_EXEC_LOCATION, 64);
+    amMemory = conf.getInt(MPIConfiguration.MPI_APPMASTER_MEMORY, 64);
     containerMemory = conf.getInt(MPIConfiguration.MPI_CONTAINER_MEMORY, 64);
     amPriority = conf.getInt(MPIConfiguration.MPI_AM_PRIORITY, 0);
     containerPriority = conf.getInt(MPIConfiguration.MPI_CONTAINER_PRIORITY, 0);
@@ -412,7 +412,7 @@ public class Client {
     // Get a new application id
     GetNewApplicationResponse newApp = getApplication();
     appId = newApp.getApplicationId();
-    LOG.info("Got Applicatioin: " + appId.toString());
+    LOG.info("Got Application: " + appId.toString());
 
     // TODO get min/max resource capabilities from RM and change memory ask if
     // needed
@@ -423,8 +423,8 @@ public class Client {
     // manager
     // int minMem = newApp.getMinimumResourceCapability().getMemory();
     int maxMem = newApp.getMaximumResourceCapability().getMemory();
-    // LOG.info("Min mem capabililty of resources in this cluster " + minMem);
-    LOG.info("Max mem capabililty of resources in this cluster " + maxMem);
+    // LOG.info("Min mem capability of resources in this cluster " + minMem);
+    LOG.info("Max mem capability of resources in this cluster " + maxMem);
 
     // A resource ask has to be at least the minimum of the capability of the
     // cluster,
@@ -442,7 +442,7 @@ public class Client {
        amMemory = maxMem;
      }
      if (containerMemory > maxMem) {
-       LOG.error("Container memories specified above the max threhold "
+       LOG.error("Container memories specified above the max threshold "
            + "(yarn.scheduler.maximum-allocation-mb) of the cluster");
        return false;
      }
@@ -470,6 +470,7 @@ public class Client {
      LOG.info("Destination path: " + appJarDst.toString());
      dfs.copyFromLocalFile(false, true, appJarSrc, appJarDst);
      FileStatus appJarDestStatus = dfs.getFileStatus(appJarDst);
+
 
      // set local resources for the application master
      Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
@@ -525,8 +526,7 @@ public class Client {
          names.append(key).append("@");
          env.put(key, fileToLocation.get(key).toString());
        }
-       env.put(MPIConstants.MPIINPUTS, names.substring(0, names.length() - 1)
-           .toString());
+       env.put(MPIConstants.MPIINPUTS, names.substring(0, names.length() - 1));
      }
      // env.put(MPIConstants.ALLOCATOR, conf.get(
      // MPIConfiguration.MPI_CONTAINER_ALLOCATOR,
@@ -543,17 +543,15 @@ public class Client {
        while (itKeys.hasNext()) {
          String key = itKeys.next();
          resultNames.append(key).append("@");
-         env.put(key, resultToLocation.get(key).toString());
+         env.put(key, resultToLocation.get(key));
        }
-       env.put(MPIConstants.MPIOUTPUTS,
-           resultNames.substring(0, resultNames.length() - 1).toString());
+       env.put(MPIConstants.MPIOUTPUTS, resultNames.substring(0, resultNames.length() - 1));
      }
 
      // Add AppMaster.jar location to classpath. At some point we should not be
      // required to add the hadoop specific classpaths to the env. It should be
      // provided out of the box. For now setting all required classpaths
-     // including
-     // the classpath to "." for the application jar
+     // including the classpath to "." for the application jar
      StringBuilder classPathEnv = new StringBuilder("${CLASSPATH}:./*");
      for (String c : conf.getStrings(
          MPIConfiguration.YARN_APPLICATION_CLASSPATH,
@@ -599,7 +597,7 @@ public class Client {
          + "/AppMaster.stdout");
      vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR
          + "/AppMaster.stderr");
-     // Get final commmand
+     // Get final command
      StringBuilder command = new StringBuilder();
      for (CharSequence str : vargs) {
        command.append(str).append(" ");
@@ -644,7 +642,7 @@ public class Client {
        SubmitApplicationResponse submitResp = applicationsManager
            .submitApplication(appRequest);
        isRunning.set(submitResp != null);
-       LOG.info("Submisstion result: " + isRunning);
+       LOG.info("Submission result: " + isRunning);
      } catch (YarnException e) {
        LOG.error("Submission failure.", e);
        return false;
