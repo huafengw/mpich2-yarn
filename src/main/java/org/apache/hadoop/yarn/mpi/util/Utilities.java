@@ -104,8 +104,7 @@ public final class Utilities {
     // TODO - what is the range for priority? how to decide?
     pri.setPriority(requestPriority);
 
-    ContainerRequest request = new ContainerRequest(
-        capability, nodes, null, pri);
+    ContainerRequest request = new ContainerRequest(capability, nodes, null, pri);
     return request;
   }
 
@@ -250,8 +249,8 @@ public final class Utilities {
    * @param fs
    * @return
    */
-  public static List<FileSplit> decodeSplt(String s, FileSystem fs) {
-    List<FileSplit> splits=new ArrayList<FileSplit>();
+  public static List<FileSplit> decodeSplit(String s, FileSystem fs) {
+    List<FileSplit> splits = new ArrayList<FileSplit>();
     if (!StringUtils.isBlank(s)) {
       //TODO replace the hard coding with '@',';','|',the regular is same with encodeSplit
       String[] splitFiles = StringUtils.split(s, "|");
@@ -285,7 +284,7 @@ public final class Utilities {
         //TODO replace the hard coding with '@',';'
         strResult.append(r.toString()).append("@");
       }
-      return strResult.substring(0, strResult.length()-1).toString();
+      return strResult.substring(0, strResult.length()-1);
     }else{
       return "";
     }
@@ -368,10 +367,9 @@ public final class Utilities {
    * @return local directory
    */
   public static String getMpiExecDir(Configuration conf, ApplicationAttemptId appAttemptID) {
-    String execDir = null;
     StringBuilder mpiExecBuilder = new StringBuilder(100);
     mpiExecBuilder.append(conf.get("hadoop.tmp.dir" , "/tmp")).append("/mpiexecs/");
-    execDir = conf.get("mpi.local.dir", mpiExecBuilder.toString()) + appAttemptID.toString();
+    String execDir = conf.get("mpi.local.dir", mpiExecBuilder.toString()) + appAttemptID.toString();
     return execDir;
   }
 
@@ -413,7 +411,7 @@ public final class Utilities {
     // TODO clarify whether multiple jobs with the same app id can be submitted
     // and be running at the same time. If yes, can we kill a particular attempt only?
     request.setApplicationId(appId);
-    LOG.info("Killing appliation with id: " + appId.toString());
+    LOG.info("Killing application with id: " + appId.toString());
     // Response can be ignored as it is non-null on success or throws an exception in case of failures
     applicationsManager.forceKillApplication(request);
   }
@@ -437,7 +435,7 @@ public final class Utilities {
 
   /**
    * Get the destination file path of the HDFS
-   * @param dfs HDFS
+   * @param conf
    * @param appName Application name
    * @param appId Application Id
    * @param filename file name
@@ -497,25 +495,25 @@ public final class Utilities {
    */
   //Problem: Connect to resource scheduler 0.0.0.0:8030 failed when AM is on slave.
   public static void printRelevantParams(String from, Configuration conf){
-    if(conf!=null){
-      LOG.info("*********BELOW IS CONFIGUATIONS FROM " + from + " *********");
+    if(conf != null){
+      LOG.debug("*********BELOW IS CONFIGURATIONS FROM " + from + " *********");
       Map<String, String> envs = System.getenv();
       Set<Entry<String, String>> entries = envs.entrySet();
       for (Entry<String, String> entry : entries) {
-        System.out.println("key=" + entry.getKey() + "; value="
+        LOG.debug("key=" + entry.getKey() + "; value="
             + entry.getValue());
       }
-      LOG.info("Checking some environment variable is properly set.");
-      LOG.info("HADOOP_CONF_DIR=" + System.getenv("HADOOP_CONF_DIR"));
-      LOG.info("YARN_CONF_DIR=" + System.getenv("YARN_CONF_DIR"));
-      LOG.info("PATH=" + System.getenv("PATH"));
-      LOG.info("Checking conf is correct");
-      LOG.info(MPIConfiguration.RM_ADDRESS+"="+conf.get(MPIConfiguration.RM_ADDRESS));
-      LOG.info(MPIConfiguration.RM_SCHEDULER_ADDRESS+"="+conf.get(MPIConfiguration.RM_SCHEDULER_ADDRESS));
-      LOG.info(MPIConfiguration.DEFAULT_RM_ADDRESS+"="+conf.get(MPIConfiguration.DEFAULT_RM_ADDRESS));
-      LOG.info(MPIConfiguration.DEFAULT_RM_SCHEDULER_ADDRESS+"="+conf.get(MPIConfiguration.DEFAULT_RM_SCHEDULER_ADDRESS));
-      LOG.info(MPIConfiguration.MPI_CONTAINER_ALLOCATOR+"="+conf.get(MPIConfiguration.MPI_CONTAINER_ALLOCATOR));
-      LOG.info("*********************************************************");
+      LOG.debug("Checking some environment variable is properly set.");
+      LOG.debug("HADOOP_CONF_DIR=" + System.getenv("HADOOP_CONF_DIR"));
+      LOG.debug("YARN_CONF_DIR=" + System.getenv("YARN_CONF_DIR"));
+      LOG.debug("PATH=" + System.getenv("PATH"));
+      LOG.debug("Checking conf is correct");
+      LOG.debug(MPIConfiguration.RM_ADDRESS+"="+conf.get(MPIConfiguration.RM_ADDRESS));
+      LOG.debug(MPIConfiguration.RM_SCHEDULER_ADDRESS+"="+conf.get(MPIConfiguration.RM_SCHEDULER_ADDRESS));
+      LOG.debug(MPIConfiguration.DEFAULT_RM_ADDRESS+"="+conf.get(MPIConfiguration.DEFAULT_RM_ADDRESS));
+      LOG.debug(MPIConfiguration.DEFAULT_RM_SCHEDULER_ADDRESS+"="+conf.get(MPIConfiguration.DEFAULT_RM_SCHEDULER_ADDRESS));
+      LOG.debug(MPIConfiguration.MPI_CONTAINER_ALLOCATOR+"="+conf.get(MPIConfiguration.MPI_CONTAINER_ALLOCATOR));
+      LOG.debug("*********************************************************");
     }
   }
 }

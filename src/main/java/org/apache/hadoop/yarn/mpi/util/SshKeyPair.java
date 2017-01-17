@@ -34,8 +34,7 @@ public class SshKeyPair {
 
   public String getPublicKeyFileContent() throws IOException {
     StringBuilder stringBuilder = new StringBuilder("ssh-rsa ");
-    stringBuilder
-    .append(Base64
+    stringBuilder.append(Base64
         .encodeBase64String(encodePublicKey((RSAPublicKey) keyPair
             .getPublic())).replaceAll("[\\n\\r]", ""));
     if (username != null && hostname != null) {

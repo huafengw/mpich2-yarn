@@ -92,8 +92,7 @@ public class Container {
     appMasterHost = System.getenv("APPMASTER_HOST");
     appMasterPort = Integer.valueOf(System.getenv("APPMASTER_PORT"));
     InetSocketAddress addr = new InetSocketAddress(appMasterHost, appMasterPort);
-    protocol = RPC.getProxy(MPDProtocol.class, MPDProtocol.versionID, addr,
-        conf);
+    protocol = RPC.getProxy(MPDProtocol.class, MPDProtocol.versionID, addr, conf);
     protocol.reportStatus(containerId, MPDStatus.INITIALIZED);
     taskReporter = new TaskReporter(protocol, conf, containerId);
     taskReporter.setDaemon(true);
@@ -117,12 +116,10 @@ public class Container {
    * @throws IOException
    * @throws ExecutionException
    */
-  public Boolean download() throws IOException, InterruptedException,
-  ExecutionException {
+  public Boolean download() throws IOException, InterruptedException, ExecutionException {
     Map<String, String> envs = System.getenv();
     String fileSplits = envs.get(MPIConstants.CONTAININPUT);
-    List<FileSplit> splits = Utilities.decodeSplt(fileSplits,
-        FileSystem.get(conf));
+    List<FileSplit> splits = Utilities.decodeSplit(fileSplits, FileSystem.get(conf));
     List<ContainerDownLoad> downLoads = new ArrayList<ContainerDownLoad>();
     boolean allDownLoadSuccess = true;
     boolean mergeSuccess = true;
@@ -137,19 +134,16 @@ public class Container {
       for (FileSplit fSplit : splits) {
         downloadResult.clear();
         downLoads.clear();
-        LOG.info(String.format("begin to download the following files:%s",
-            fSplit.getSplits()));
+        LOG.info(String.format("begin to download the following files:%s", fSplit.getSplits()));
         int i = 1;
         for (Path path : fSplit.getSplits()) {
-          String downLoadOut = localDir + System.currentTimeMillis() + "-"
-              + i++;
+          String downLoadOut = localDir + System.currentTimeMillis() + "-" + i++;
           ContainerDownLoad download = new ContainerDownLoad(path,
               FileSystem.get(conf), downLoadOut, conf);
           downLoads.add(download);
         }
         LOG.info(String.format("download size: %d", downLoads.size()));
-        List<Future<String>> results = this.executorDownload
-            .invokeAll(downLoads);
+        List<Future<String>> results = this.executorDownload.invokeAll(downLoads);
 
         LOG.info(String.format("result size: %d", results.size()));
 
@@ -161,11 +155,9 @@ public class Container {
           }
         }
         if (allDownLoadSuccess) {
-          LOG.info(String.format(
-              "download the following files:%s successfully",
+          LOG.info(String.format("download the following files:%s successfully",
               fSplit.getSplits()));
-          LOG.info(String
-              .format(
+          LOG.info(String.format(
                   "begin to merge the following  files:%s,and the merge file name:%s",
                   downloadResult, fSplit.getDownFileName()));
           ContainerMerge merge = new ContainerMerge(downloadResult,
@@ -426,12 +418,10 @@ public class Container {
                   container.getConf(), container.getAppAttemptID());
               try {
                 FileUtil.fullyDelete(new File(deleteDir));
-                LOG.info(String.format("clean the folder:%s successfully",
-                    deleteDir));
+                LOG.info(String.format("clean the folder:%s successfully", deleteDir));
               } catch (Exception e2) {
                 LOG.error(String.format(
-                    "error happens when cleaning the folder: %s", deleteDir),
-                    e2);
+                    "error happens when cleaning the folder: %s", deleteDir), e2);
               }
             }
           });

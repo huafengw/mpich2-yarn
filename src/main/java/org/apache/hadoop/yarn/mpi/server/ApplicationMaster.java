@@ -286,8 +286,7 @@ public class ApplicationMaster extends CompositeService {
     hdfsMPIExecLocation = envs.get(MPIConstants.MPIEXECLOCATION);
     LOG.info("HDFS mpi application location: " + hdfsMPIExecLocation);
     if (envs.containsKey(MPIConstants.MPIEXECTIMESTAMP)) {
-      hdfsMPIExecTimestamp = Long.valueOf(envs
-          .get(MPIConstants.MPIEXECTIMESTAMP));
+      hdfsMPIExecTimestamp = Long.valueOf(envs.get(MPIConstants.MPIEXECTIMESTAMP));
     }
     if (envs.containsKey(MPIConstants.MPIEXECLEN)) {
       hdfsMPIExecLen = Long.valueOf(envs.get(MPIConstants.MPIEXECLEN));
@@ -305,8 +304,7 @@ public class ApplicationMaster extends CompositeService {
     hdfsAppJarLocation = envs.get(MPIConstants.APPJARLOCATION);
     LOG.info("HDFS AppMaster.jar location: " + hdfsAppJarLocation);
     if (envs.containsKey(MPIConstants.APPJARTIMESTAMP)) {
-      hdfsAppJarTimeStamp = Long
-          .valueOf(envs.get(MPIConstants.APPJARTIMESTAMP));
+      hdfsAppJarTimeStamp = Long.valueOf(envs.get(MPIConstants.APPJARTIMESTAMP));
     }
     if (envs.containsKey(MPIConstants.APPJARLEN)) {
       hdfsAppJarLen = Long.valueOf(envs.get(MPIConstants.APPJARLEN));
@@ -375,13 +373,11 @@ public class ApplicationMaster extends CompositeService {
           String location = envs.get(fileName);
           MPIResult mResult = new MPIResult();
           mResult.setDfsLocation(location);
-          String local = Utilities.getApplicationDir(conf,
-              appAttemptID.toString())
-              + fileName;
+          String local = Utilities.getApplicationDir(conf, appAttemptID.toString())
+            + fileName;
           mResult.setContainerLocal(local);
           resultToDestination.put(fileName, mResult);
-          LOG.debug(String.format("path of %s : %s", fileName,
-              mResult.toString()));
+          LOG.debug(String.format("path of %s : %s", fileName, mResult.toString()));
         }
       }
     }
@@ -422,7 +418,7 @@ public class ApplicationMaster extends CompositeService {
    *
    * @param downLoadFiles
    * @param fileToLocation
-   * @param containerSize
+   * @param containers
    * @return
    */
   private ConcurrentHashMap<Integer, List<FileSplit>> getFileSplit(
@@ -433,9 +429,9 @@ public class ApplicationMaster extends CompositeService {
     ConcurrentHashMap<Integer, List<FileSplit>> mSplits = new ConcurrentHashMap<Integer, List<FileSplit>>();
     // init the mSplits
     for (Container container : containers) {
-      List<FileSplit> fSplits = new ArrayList<FileSplit>();
-      mSplits.putIfAbsent(Integer.valueOf(container.getId().getId()), fSplits);
+      mSplits.putIfAbsent(container.getId().getId(), new ArrayList<FileSplit>());
     }
+
     Set<String> fileKeys = downLoadFiles.keySet();
     Iterator<String> itKeys = fileKeys.iterator();
     while (itKeys.hasNext()) {
@@ -449,8 +445,7 @@ public class ApplicationMaster extends CompositeService {
         sameSplit.setSplits(paths);
         for (Container container : containers) {
           Integer containerId = container.getId().getId();
-          String downFileName = Utilities.getApplicationDir(conf,
-              appAttemptID.toString())
+          String downFileName = Utilities.getApplicationDir(conf, appAttemptID.toString())
               + fileName;
           fileToDestination.put(fileName, downFileName);
           sameSplit.setDownFileName(downFileName);
@@ -476,8 +471,7 @@ public class ApplicationMaster extends CompositeService {
             List<Path> ps = new ArrayList<Path>();
             ps.add(paths.get(i));
             fsNotSame.setSplits(ps);
-            String destination = Utilities.getApplicationDir(conf,
-                appAttemptID.toString())
+            String destination = Utilities.getApplicationDir(conf, appAttemptID.toString())
                 + fileName;
             fsNotSame.setDownFileName(destination);
             fileToDestination.put(fileName, destination);
@@ -526,14 +520,13 @@ public class ApplicationMaster extends CompositeService {
     LOG.info("Starting MPDProtocal's RPC services...");
     mpdListener.start();
 
-    LOG.info("Initiallizing MPIClient service and WebApp...");
+    LOG.info("Initializing MPIClient service and WebApp...");
     clientService = new MPIClientService(appContext);
     clientService.init(conf);
 
     LOG.info("Starting MPIClient service...");
     clientService.start();
-    appMasterTrackingUrl = appMasterHostname + ":"
-        + clientService.getHttpPort();
+    appMasterTrackingUrl = appMasterHostname + ":" + clientService.getHttpPort();
     LOG.info("Application Master tracking url is " + appMasterTrackingUrl);
 
     amPublicKey = generateKeyPairAndLoadPublicKey();
@@ -651,8 +644,6 @@ public class ApplicationMaster extends CompositeService {
   public boolean run() throws IOException, NoSuchAlgorithmException {
     LOG.info("Starting ApplicationMaster");
 
-    // debug_launch_mpiexec();
-
     // Connect to ResourceManager
 
     // TODO Setup local RPC Server to accept status requests directly from
@@ -667,8 +658,8 @@ public class ApplicationMaster extends CompositeService {
       // Dump out information about cluster capability as seen by the
       // resource manager
       int maxMem = response.getMaximumResourceCapability().getMemory();
-      // LOG.info("Min mem capabililty of resources in this cluster " + minMem);
-      LOG.info("Max mem capabililty of resources in this cluster " + maxMem);
+      // LOG.info("Min mem capability of resources in this cluster " + minMem);
+      LOG.info("Max mem capability of resources in this cluster " + maxMem);
       if (containerMemory > maxMem) {
         LOG.info("Container memory specified above max threshold of cluster. Using max value."
             + ", specified=" + containerMemory + ", max=" + maxMem);
@@ -719,7 +710,7 @@ public class ApplicationMaster extends CompositeService {
           + allocatedContainer.getResource().getMemory());
 
       Boolean result = launchContainerAsync(allocatedContainer,
-          splits.get(Integer.valueOf(allocatedContainer.getId().getId())),
+          splits.get(allocatedContainer.getId().getId()),
           resultToDestination.values());
 
       mpdListener.addContainer(new ContainerId(allocatedContainer.getId()));
@@ -960,7 +951,7 @@ public class ApplicationMaster extends CompositeService {
         mpiOptions = mpiOptions.replaceAll(resultName,
             resultToDestination.get(resultName).getContainerLocal());
       }
-      LOG.info(String.format("mpi options:", mpiOptions));
+      LOG.info("mpi options: " + mpiOptions);
 
       commandBuilder.append(mpiOptions);
     }
